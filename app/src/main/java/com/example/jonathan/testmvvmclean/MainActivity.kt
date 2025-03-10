@@ -3,45 +3,34 @@ package com.example.jonathan.testmvvmclean
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.jonathan.testmvvmclean.ui.theme.TestMvvmCleanTheme
+import com.example.jonathan.testmvvmclean.data.local.MyStringDataStoreRepository
+import com.example.jonathan.testmvvmclean.data.remote.MyStringBackendServerRepository
+import com.example.jonathan.testmvvmclean.domain.usecase.GetMyStringFromBackendServerUseCase
+import com.example.jonathan.testmvvmclean.domain.usecase.GetMyStringFromDataStoreUseCase
+import com.example.jonathan.testmvvmclean.domain.usecase.SaveMyStringToDataStoreUseCase
+import com.example.jonathan.testmvvmclean.presentation.view.TestMvvmCleanApp
+import com.example.jonathan.testmvvmclean.presentation.viewmodel.MyStringViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // ✅ Manually provide dependencies
+        val localRepository = MyStringDataStoreRepository(applicationContext)
+        val remoteRepository = MyStringBackendServerRepository()
+
+        val getMyStringFromDataStoreUseCase = GetMyStringFromDataStoreUseCase(localRepository)
+        val saveMyStringToDataStoreUseCase = SaveMyStringToDataStoreUseCase(localRepository)
+        val getMyStringFromBackendServerUseCase = GetMyStringFromBackendServerUseCase(remoteRepository)
+
+        val viewModel = MyStringViewModel(
+            getMyStringFromDataStoreUseCase,
+            saveMyStringToDataStoreUseCase,
+            getMyStringFromBackendServerUseCase
+        )
+
         setContent {
-            TestMvvmCleanTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            TestMvvmCleanApp(viewModel = viewModel) // ✅ Now correctly provides ViewModel
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TestMvvmCleanTheme {
-        Greeting("Android")
     }
 }
