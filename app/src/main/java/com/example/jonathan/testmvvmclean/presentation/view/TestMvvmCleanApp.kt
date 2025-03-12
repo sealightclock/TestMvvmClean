@@ -10,6 +10,7 @@ import com.example.jonathan.testmvvmclean.presentation.viewmodel.MyStringViewMod
 @Composable
 fun TestMvvmCleanApp(viewModel: MyStringViewModel) {
     val uiState by viewModel.myString.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "My String", style = MaterialTheme.typography.titleLarge)
@@ -19,15 +20,22 @@ fun TestMvvmCleanApp(viewModel: MyStringViewModel) {
             value = uiState.value, // ✅ Using MyStringModel
             onValueChange = { viewModel.saveMyString(it) },
             label = { Text("Enter a value") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading // Disable input while loading
         )
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ✅ Show progress indicator when loading
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+        }
+
         Button(
             onClick = { viewModel.updateFromServer() },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading // Disable button while loading
         ) {
-            Text("Update from Server")
+            Text(if (isLoading) "Updating..." else "Update from Server")
         }
     }
 }

@@ -3,9 +3,9 @@ package com.example.jonathan.testmvvmclean.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jonathan.testmvvmclean.domain.model.MyStringModel
+import com.example.jonathan.testmvvmclean.domain.usecase.GetMyStringFromBackendServerUseCase
 import com.example.jonathan.testmvvmclean.domain.usecase.GetMyStringFromDataStoreUseCase
 import com.example.jonathan.testmvvmclean.domain.usecase.SaveMyStringToDataStoreUseCase
-import com.example.jonathan.testmvvmclean.domain.usecase.GetMyStringFromBackendServerUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,9 +19,12 @@ class MyStringViewModel(
     private val _myString = MutableStateFlow(MyStringModel(""))
     val myString = _myString.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
-            _myString.value = getMyStringFromDataStoreUseCase.execute() // Now correctly referencing DataStore
+            _myString.value = getMyStringFromDataStoreUseCase.execute()
         }
     }
 
@@ -34,7 +37,9 @@ class MyStringViewModel(
 
     fun updateFromServer() {
         viewModelScope.launch {
-            _myString.value = getMyStringFromBackendServerUseCase.execute() // Now references getMyString()
+            _isLoading.value = true  // Show loading indicator
+            _myString.value = getMyStringFromBackendServerUseCase.execute()
+            _isLoading.value = false // Hide loading indicator
         }
     }
 }
